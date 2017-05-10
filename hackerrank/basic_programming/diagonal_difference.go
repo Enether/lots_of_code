@@ -22,7 +22,7 @@ func getDownRightDiagSum(matrix [][]int, size int) int {
 	for startR, startC := 0, 0; startR < size && startC < size; startR, startC = startR + 1, startC + 1{
 		sum += matrix[startR][startC]
 	}
-	
+
 	return sum
 }
 func getDownLeftDiagSum(matrix [][]int, size int) int {

@@ -40,5 +40,5 @@ func startGame(players []net.Conn) {
 		fmt.Println(player)
 	}
 
-	runGame(players)
+	RunGame(players)
 }

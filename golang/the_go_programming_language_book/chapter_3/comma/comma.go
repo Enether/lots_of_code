@@ -18,6 +18,13 @@ func comma(s string) string {
 	var buff bytes.Buffer
 	stringLen := len(s)
 	hasSign := false
+	flPointIdx, hasFlPoint := findFloatingPoint(s)
+	if hasFlPoint {
+		buff.WriteString(comma(s[:flPointIdx]))
+		buff.WriteString(s[flPointIdx:])
+		return buff.String()
+	}
+
 	if s[0] == '-' || s[0] == '+' {
 		stringLen -= 1  // so that modulo operations ignore the sign
 		hasSign = true
@@ -56,3 +63,15 @@ func comma(s string) string {
 	return buff.String()
 }
 
+/*
+	Finds and returns the index of a floating point in a number stirng
+ */
+func findFloatingPoint(s string) (idx int, hasPoint bool) {
+	for idx, char := range s {
+		if char == '.' {
+			return idx, true
+		}
+	}
+
+	return -1, false
+}

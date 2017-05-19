@@ -1,57 +1,77 @@
+from collections import deque
+def circ_walk(n, s, t, r_values):
+    queue = deque()
+    count = 0
+    queue.append(s)
+    visited = [False for _ in range(n)]
+    added = [False for _ in range(n)]
+    added[s] = True
 
-
-def fill_r_array(r: list, g, seed, p):
-    for i in range(1, len(r)):
-        r[i] = (r[i-1]*g + seed) % p
-def get_min_steps(s):
-    global r
-    for i in range(len(r)):
-        if dp[i] == float('inf'):
-            start = j - r[i]
-            end = j + r[i]
-            for i in range(start, end+1):
-                if i < 0:
-                    s_new = n + i
-                else:
-                    if i >= n:
-                        s_new = i % n
-                    else:
-                        s_new = i
-                # s_new = i % n
-                if dp[s_new] != float('inf'):
-                    dp[i] = min(1+dp[s_new], dp[i])
-    if dp[s] == float('inf'):
-        get_min_steps(s)
-
+    while queue:
+        count += 1
+        tmp = deque()
+        while queue:
+            p = queue.popleft()
+            if not visited[p]:
+                visited[p] = True
+                start = p - r_values[p]
+                end = p + r_values[p]
+                for i in range(start, end+1):
+                    s_new = i % n  # TODO: May not work ?
+                    if s_new == t:
+                        return count
+                    if not visited[s_new] and not added[s_new]:
+                        tmp.append(s_new)
+                        added[s_new] = True
+        queue = tmp
+    return -1
 n, s, t = [int(p) for p in input().split()]
+r_0, g, seed, p = [int(p) for p in input().split()]
+
+r_values = []
+r_values.append(r_0)
+for i in range(1, n):
+    r_values.append((r_values[i-1]*g+seed)%p)
+if r_values[0] == 0 and s != t:
+    print(-1)
+    exit()
 if s == t:
     print(0)
     exit()
+print(circ_walk(n, s, t, r_values))
 
-zero_val, g, seed, p = [int(p) for p in input().split()]
-r = [0 for _ in range(n)]
-r[0] = zero_val
-fill_r_array(r, g, seed, p)
-if r[s] == 0:
-    print(-1)
-    exit()
-if abs(t-s) <= r[s]:
-    print(1)
-    exit()
+"""
+import java.util.*;
 
-dp = [0 for _ in range(n)]
-for j in range(n):
-    start = j - r[s]
-    end = j + r[s]
-    dp[j] = float('inf')
-    for i in range(start, end+1):
-        s_new = n%i
-        if s_new == t:
-            dp[j] = 1
-    dp[t] = 0
-    if dp[s] == float('inf'):
-        get_min_steps(s)
-    if dp[s] == float('inf'):
-        print(-1)
-    else:
-        print(dp[s])
+public class Solution {
+
+
+	private static int circularWalk(int n, int s, int t, int[] r_values) {
+		Queue<Integer> queue = new LinkedList<>();
+		int count = 0;
+		queue.add(s);
+		boolean[] visited = new boolean[n];
+		boolean[] added = new boolean[n]; //reduces the inner loops substantially -> makes the code O(n)
+		added[s] = true;
+
+					visited[p] = true;
+					int start = p - r_values[p];
+					int end = p + r_values[p];
+					for (int i = start; i <= end; i++) {
+						int s_new = i < 0 ? n + i : i >= n ? i % n : i;
+						if (s_new == t) {
+							return count;
+						}
+						if (!visited[s_new] && !added[s_new]) {
+							tmp.add(s_new);
+							added[s_new] = true;
+						}
+					}
+				}
+			}
+			queue = tmp;
+		}
+		return  -1;
+	}
+}
+"""

@@ -49,6 +49,7 @@ class AATree
         @root = root
         @count = 1
     end
+
     #
     # Adds a value into the tree
     #
@@ -56,9 +57,133 @@ class AATree
         if @root.nil?
             @root = AANode.new(value: value, level: 1)
         else
-            self._add(value, @root)
+            self._add(value, @root.as(AANode))
         end
         @count += 1
+    end
+
+    #
+    # Removes a value from the tree
+    #
+    def remove(value : Int32)
+        if @root.nil?
+            raise Exception.new("There is nothing to remove!")
+        elsif @count == 1
+            @root = nil
+            @count = 0
+            return
+        end
+
+        _remove(value, @root)
+        @count -= 1
+    end
+
+    #
+    # Removes a value from the tree
+    #
+    def _remove(value : Int32, node : (AANode | Nil))
+        if node.nil?
+            raise Exception.new("Value #{value} is not in the tree!")
+        end
+
+        if node.value != value
+            # recurse downwards until we find the right node
+            if node.value > value
+                _remove(value, node.left)
+            else
+                _remove(value, node.right)
+            end
+        else
+            # We're at the correct node, remove it
+            if node.right.nil? && node.left.nil?
+                # We're at a leaf, simply remove it
+                parent = node.parent.as(AANode)
+                if parent.left == node
+                    parent.left =  nil
+                else
+                    parent.right = nil
+                end
+            elsif node.left.nil?
+                # there is a right node, get the successor
+                successor = node.right.as(AANode)
+                until successor.left.nil?
+                    successor = successor.left.as(AANode) 
+                end
+
+                # Swap both nodes
+                node.value = successor.value
+                succ_parent = successor.parent.as(AANode)
+                if succ_parent.right == successor
+                    succ_parent.right = nil
+                else
+                    succ_parent.left = nil
+                end
+            else
+                # there is a left node, get the predecessor
+                predecessor = node.left.as(AANode)
+                until predecessor.right.nil?
+                    predecessor = predecessor.right.as(AANode) 
+                end
+
+                # Swap both nodes
+                node.value = predecessor.value
+                pred_parent = predecessor.parent.as(AANode)
+                if pred_parent.right == predecessor
+                    pred_parent.right = nil
+                else
+                    pred_parent.left = nil
+                end
+            end
+        end
+
+        # The node is removed, now fix the levels
+
+        # left node should be exactly one level less
+        left_level_is_wrong : Bool = (!node.left.nil? && node.left.as(AANode).level < node.level - 1) || (node.left.nil? && node.level > 1)  # if we don't have a left node, our level should be 1
+
+        # right node should be exactly one less or equal
+        right_level_is_wrong : Bool = (!node.right.nil? && node.right.as(AANode).level < node.level - 1) || (node.right.nil? && node.level > 1)  # if we don't have a right node, our level should be 1
+
+        # If there is no break in the levels there is no need  to do rebalance operations
+        return unless (left_level_is_wrong || right_level_is_wrong)
+
+        node.level -= 1
+        if (!node.right.nil? && node.right.as(AANode).level > node.level)
+            # right node had the equal level and is now bigger after our decrease, so we reset its level
+            node.right.as(AANode).level = node.level
+        end
+
+        check_skew(node, false)
+        unless node.right.nil?
+            check_skew(node.right.as(AANode), false)
+        end
+        unless node.left.nil?
+            check_skew(node.left.as(AANode), false)
+        end
+
+        if (!node.right.nil? && !node.right.as(AANode).left.nil?)
+            check_skew(node.right.as(AANode).left.as(AANode), false)
+        end
+        if (!node.right.nil? && !node.right.as(AANode).right.nil? && !node.right.as(AANode).right.as(AANode).left.nil?)
+            check_skew(node.right.as(AANode).right.as(AANode).left.as(AANode), false)
+        end
+
+        check_split(node)
+
+        # if we do a split, we need to keep track of the right-right leaf so that we can check it for a split as well
+        if (!node.right.nil? && !node.right.as(AANode).right.nil?)
+            right_right_leaf = node.right.as(AANode).right.as(AANode)
+
+            check_split(right_right_leaf)
+
+            if (!right_right_leaf.right.nil? && !right_right_leaf.right.as(AANode).right.nil?)
+                check_split(right_right_leaf.right.as(AANode).right.as(AANode))
+            end
+
+            unless node.right.nil?
+                check_split(node.right.as(AANode))
+            end
+        end
     end
 
     #
@@ -195,13 +320,10 @@ end
 root = AANode.new(value: 100, level: 1)
 tree = AATree.new(root)
 
-tree.add(101)
-tree.add(99)
-tree.add(102)
-tree.add(103)
-tree.add(104)
-tree.add(105)
-tree.add(130)
-tree.add(129)
-tree.add(108)
-tree.add(109)
+100.times do |num|
+    tree.add(num)
+end
+
+100.times do |num|
+    tree.remove(num)
+end

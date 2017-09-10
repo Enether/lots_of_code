@@ -50,6 +50,32 @@ class AATree
         @count = 1
     end
 
+    def contains?(value : Int32) : Bool
+        if @root.nil?
+            raise Exception.new("Tree is empty!")
+        else
+            _contains(value, @root.as(AANode))
+        end
+    end
+
+    def _contains(value : Int32, node : AANode) : Bool
+        if node.value > value
+            if node.left.nil?
+                false
+            else
+                _contains(value, node.left.as(AANode))
+            end
+        elsif node.value < value
+            if node.right.nil?
+                false
+            else
+                _contains(value, node.right.as(AANode))
+            end
+        else
+            true
+        end
+    end
+
     #
     # Adds a value into the tree
     #
@@ -321,9 +347,13 @@ root = AANode.new(value: 100, level: 1)
 tree = AATree.new(root)
 
 100.times do |num|
+    raise Exception.new("Tree should not contain #{num}") if tree.contains?(num)
     tree.add(num)
+    raise Exception.new("Tree should contain #{num}") unless tree.contains?(num)
 end
 
 100.times do |num|
+    raise Exception.new("Tree should contain #{num}") unless tree.contains?(num)
     tree.remove(num)
+    raise Exception.new("Tree should not contain #{num}") if tree.contains?(num)
 end

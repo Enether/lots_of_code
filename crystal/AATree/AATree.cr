@@ -9,32 +9,7 @@ class AANode
         @right = right
     end
 end
-struct Nil
-    # TODO: Remove this hack
-    def parent
-        raise "WTF"
-    end
 
-    def parent=(tk)
-        raise "WTF"
-    end
-    
-    def right
-        raise "WTF"
-    end
-    def right=(tk)
-        raise "WTF"
-    end
-    def level
-        raise "WTF"
-    end
-    def level=(tk)
-        raise "WTF"
-    end
-    def is_right_grandchild?(grandparent : AANode)
-        raise "WTF"
-    end
-end
 class AATree
     def initialize(root : AANode)
         @root = root
@@ -50,7 +25,7 @@ class AANode
         if @parent.nil?
             nil
         else
-            @parent.parent
+            @parent.as(AANode).parent
         end
     end
 
@@ -65,7 +40,7 @@ class AANode
     #  6 is not a right grandchild of 5
     #
     def is_right_grandchild?(grandparent : AANode)
-        (!grandparent.right.nil?) && (!grandparent.right.right.nil?) && grandparent.right.right == self
+        (!grandparent.right.nil?) && (!grandparent.right.as(AANode).right.nil?) && grandparent.right.as(AANode).right == self
     end
 end
 
@@ -79,7 +54,7 @@ class AATree
     #
     def add(value : Int32)
         if @root.nil?
-            # TODO:
+            @root = AANode.new(value: value, level: 1)
         else
             self._add(value, @root)
         end
@@ -153,7 +128,7 @@ class AATree
         grandparent.parent = parent  # R parent is now P
         grandparent.right = parent.left
         unless parent.left.nil?
-            parent.left.parent = grandparent
+            parent.left.as(AANode).parent = grandparent
         end
         parent.left = grandparent
         parent.level += 1
@@ -209,10 +184,7 @@ class AATree
             skew(parent, node)
             # check for split; Parent would now be the middle element
             if (!parent.right.nil?) && check_for_split
-                if parent.right.nil?
-                    return
-                end
-                if parent.right.is_right_grandchild?(node) && node.level <= parent.right.level
+                if parent.right.as(AANode).is_right_grandchild?(node) && node.level <= parent.right.as(AANode).level
                     split(node, parent)
                 end
             end

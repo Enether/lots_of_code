@@ -54,22 +54,22 @@ class AATree
         if @root.nil?
             raise Exception.new("Tree is empty!")
         else
-            _contains(value, @root.as(AANode))
+            _contains?(value, @root.as(AANode))
         end
     end
 
-    def _contains(value : Int32, node : AANode) : Bool
+    protected def _contains?(value : Int32, node : AANode) : Bool
         if node.value > value
             if node.left.nil?
                 false
             else
-                _contains(value, node.left.as(AANode))
+                _contains?(value, node.left.as(AANode))
             end
         elsif node.value < value
             if node.right.nil?
                 false
             else
-                _contains(value, node.right.as(AANode))
+                _contains?(value, node.right.as(AANode))
             end
         else
             true
@@ -107,7 +107,7 @@ class AATree
     #
     # Removes a value from the tree
     #
-    def _remove(value : Int32, node : (AANode | Nil))
+    protected def _remove(value : Int32, node : (AANode | Nil))
         if node.nil?
             raise Exception.new("Value #{value} is not in the tree!")
         end
@@ -217,7 +217,7 @@ class AATree
     # left/right of which the new node should be inserted.
     # Backtracing from the recursion, we check if we should perform a split or skew operation*/
     #
-    def _add(value : Int32, node : AANode)
+    protected def _add(value : Int32, node : AANode)
         if value < node.value
             # go left
             if node.left.nil?
@@ -343,17 +343,21 @@ class AATree
     end
 end
 
-root = AANode.new(value: 100, level: 1)
+root = AANode.new(value: 100001, level: 1)
 tree = AATree.new(root)
 
-100.times do |num|
+start = Time.now
+puts "AA"
+100000.times do |num|
     raise Exception.new("Tree should not contain #{num}") if tree.contains?(num)
     tree.add(num)
     raise Exception.new("Tree should contain #{num}") unless tree.contains?(num)
 end
 
-100.times do |num|
+100000.times do |num|
     raise Exception.new("Tree should contain #{num}") unless tree.contains?(num)
     tree.remove(num)
     raise Exception.new("Tree should not contain #{num}") if tree.contains?(num)
 end
+
+puts "Time it took #{Time.now - start}"
